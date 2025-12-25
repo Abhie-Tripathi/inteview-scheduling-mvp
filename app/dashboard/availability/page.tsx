@@ -1,10 +1,9 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { AvailabilityForm } from "@/components/availability-form"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Clock } from "lucide-react"
-import Link from "next/link"
+import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
+import { AvailabilityFormMui } from "@/components/availability-form-mui"
+import { Box, Typography, Card, CardContent } from "@mui/material"
+import { Schedule } from "@mui/icons-material"
 
 export default async function AvailabilityPage() {
   const supabase = await createClient()
@@ -17,6 +16,8 @@ export default async function AvailabilityPage() {
     redirect("/login")
   }
 
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
+
   const { data: availability } = await supabase
     .from("availability")
     .select("*")
@@ -24,45 +25,61 @@ export default async function AvailabilityPage() {
     .order("day_of_week", { ascending: true })
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4">
-          <Link href="/dashboard">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8 max-w-3xl">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Clock className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">Set Your Availability</h1>
-              <p className="text-muted-foreground mt-0.5">
+    <DashboardLayout user={{ full_name: profile?.full_name, email: user.email }}>
+      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        {/* Top Bar */}
+        <Box
+          sx={{
+            px: 4,
+            py: 2,
+            borderBottom: 1,
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box
+              sx={{
+                width: 48,
+                height: 48,
+                borderRadius: 2,
+                bgcolor: 'primary.main',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+              }}
+            >
+              <Schedule />
+            </Box>
+            <Box>
+              <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                Set Your Availability
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
                 Define your weekly schedule for candidate bookings
-              </p>
-            </div>
-          </div>
-        </div>
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
 
-        <Card className="border-2 shadow-lg">
-          <CardHeader>
-            <CardTitle>Weekly Hours</CardTitle>
-            <CardDescription>
-              Set recurring availability for each day. Only these times will be bookable.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <AvailabilityForm userId={user.id} existingAvailability={availability || []} />
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+        {/* Main Content */}
+        <Box sx={{ flex: 1, overflow: 'auto', bgcolor: 'background.default' }}>
+          <Box sx={{ maxWidth: 900, mx: 'auto', px: 4, py: 4 }}>
+            <Card>
+              <CardContent sx={{ p: 4 }}>
+                <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                  Weekly Hours
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+                  Set recurring availability for each day. Only these times will be bookable.
+                </Typography>
+                <AvailabilityFormMui userId={user.id} existingAvailability={availability || []} />
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
+      </Box>
+    </DashboardLayout>
   )
 }

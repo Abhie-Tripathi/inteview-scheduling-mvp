@@ -1,12 +1,25 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calendar, Plus, Settings, TrendingUp, Clock, Users2 } from "lucide-react"
+import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
+import {
+  Box,
+  Typography,
+  Button,
+  TextField,
+  InputAdornment,
+  IconButton,
+  Avatar,
+  Tabs,
+  Tab,
+} from "@mui/material"
+import {
+  Add,
+  Search,
+  HelpOutline,
+  Launch,
+} from "@mui/icons-material"
 import Link from "next/link"
-import { LogoutButton } from "@/components/logout-button"
-import { EventTypesList } from "@/components/event-types-list"
-import { Badge } from "@/components/ui/badge"
+import { EventTypesListMui } from "@/components/event-types-list-mui"
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -36,148 +49,99 @@ export default async function DashboardPage() {
   const upcomingBookings = bookings?.filter((b) => new Date(b.start_time) > new Date()) || []
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="relative">
-              <Calendar className="h-6 w-6 text-primary" />
-              <div className="absolute -inset-1 bg-primary/20 rounded-full blur-sm -z-10" />
-            </div>
-            <h1 className="text-xl font-bold">Interview Scheduler</h1>
-          </Link>
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="text-sm font-medium text-primary">
-                  {(profile?.full_name || user.email || "U").charAt(0).toUpperCase()}
-                </span>
-              </div>
-              <span className="text-sm text-muted-foreground">{profile?.full_name || user.email}</span>
-            </div>
-            <LogoutButton />
-          </div>
-        </div>
-      </header>
+    <DashboardLayout user={{ full_name: profile?.full_name, email: user.email }}>
+      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        {/* Top Bar */}
+        <Box
+          sx={{
+            px: 4,
+            py: 2,
+            borderBottom: 1,
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 600 }}>
+              Scheduling
+            </Typography>
+            <IconButton size="small">
+              <HelpOutline fontSize="small" />
+            </IconButton>
+          </Box>
+          <Button
+            component={Link}
+            href="/dashboard/event-types/new"
+            variant="contained"
+            startIcon={<Add />}
+            sx={{ borderRadius: 2 }}
+          >
+            Create
+          </Button>
+        </Box>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div>
-            <h2 className="text-3xl font-bold">Welcome back!</h2>
-            <p className="text-muted-foreground mt-1">Manage your interview events and bookings</p>
-          </div>
-          <Link href="/dashboard/event-types/new">
-            <Button size="lg" className="shadow-lg shadow-primary/25">
-              <Plus className="h-4 w-4 mr-2" />
-              New Event Type
-            </Button>
-          </Link>
-        </div>
+        {/* Tabs */}
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper', px: 4 }}>
+          <Tabs value={0}>
+            <Tab label="Event types" />
+            <Tab label="Single-use links" disabled />
+            <Tab label="Meeting polls" disabled />
+          </Tabs>
+        </Box>
 
-        <div className="grid gap-6 md:grid-cols-3 mb-8">
-          <Card className="border-2 hover:shadow-lg transition-all">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Event Types</CardTitle>
-              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Calendar className="h-5 w-5 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{eventTypes?.length || 0}</div>
-              <p className="text-xs text-muted-foreground mt-1">Active booking pages</p>
-            </CardContent>
-          </Card>
+        {/* Main Content */}
+        <Box sx={{ flex: 1, overflow: 'auto', bgcolor: 'background.default' }}>
+          <Box sx={{ maxWidth: 1200, mx: 'auto', px: 4, py: 3 }}>
+            {/* Search Bar */}
+            <TextField
+              fullWidth
+              placeholder="Search event types"
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                mb: 3,
+                maxWidth: 600,
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: 'background.paper',
+                },
+              }}
+            />
 
-          <Card className="border-2 hover:shadow-lg transition-all">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Upcoming</CardTitle>
-              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Clock className="h-5 w-5 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{upcomingBookings.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">Interviews scheduled</p>
-            </CardContent>
-          </Card>
+            {/* User Section */}
+            <Box sx={{ mb: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '0.875rem' }}>
+                  {(profile?.full_name || user.email || 'U').charAt(0).toUpperCase()}
+                </Avatar>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  {profile?.full_name || user.email}
+                </Typography>
+                <Button
+                  component={Link}
+                  href={`/book`}
+                  endIcon={<Launch fontSize="small" />}
+                  size="small"
+                  sx={{ ml: 'auto', textTransform: 'none' }}
+                >
+                  View landing page
+                </Button>
+              </Box>
 
-          <Card className="border-2 hover:shadow-lg transition-all">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Bookings</CardTitle>
-              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Users2 className="h-5 w-5 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{bookings?.length || 0}</div>
-              <p className="text-xs text-muted-foreground mt-1">All time interviews</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          <Card className="border-2 shadow-lg">
-            <CardHeader>
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <CardTitle className="text-xl">Event Types</CardTitle>
-                  <CardDescription className="mt-1">Configure your interview event types</CardDescription>
-                </div>
-                <Link href="/dashboard/availability">
-                  <Button variant="outline" size="sm" className="shadow-sm">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Set Availability
-                  </Button>
-                </Link>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <EventTypesList eventTypes={eventTypes || []} userId={user.id} />
-            </CardContent>
-          </Card>
-
-          {upcomingBookings.length > 0 && (
-            <Card className="border-2 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-xl">Upcoming Interviews</CardTitle>
-                <CardDescription>Your next scheduled interviews</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {upcomingBookings.slice(0, 5).map((booking) => (
-                    <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium">{booking.candidate_name}</p>
-                          <Badge variant="outline" className="text-xs">
-                            {booking.status}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{booking.candidate_email}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium">
-                          {new Date(booking.start_time).toLocaleDateString(undefined, {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(booking.start_time).toLocaleTimeString(undefined, {
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </main>
-    </div>
+              {/* Event Types List */}
+              <EventTypesListMui eventTypes={eventTypes || []} userId={user.id} />
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+    </DashboardLayout>
   )
 }

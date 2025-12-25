@@ -1,28 +1,34 @@
-"use client"
+'use client'
 
-import type React from "react"
-
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calendar, Loader2, ArrowLeft } from "lucide-react"
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
+import {
+  Box,
+  Card,
+  CardContent,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  CircularProgress,
+  Avatar,
+  IconButton,
+} from '@mui/material'
+import { CalendarMonth, ArrowBack } from '@mui/icons-material'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [error, setError] = useState('')
   const router = useRouter()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setError("")
+    setError('')
 
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({
@@ -34,87 +40,113 @@ export default function LoginPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push("/dashboard")
+      router.push('/dashboard')
       router.refresh()
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted/20 px-4">
-      <div className="w-full max-w-md">
-        <Link href="/" className="flex items-center gap-2 mb-8 w-fit mx-auto">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
-          </Button>
-        </Link>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'background.default',
+        px: 2,
+      }}
+    >
+      <Box sx={{ width: '100%', maxWidth: 450 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+          <IconButton component={Link} href="/" sx={{ color: 'text.secondary' }}>
+            <ArrowBack />
+          </IconButton>
+        </Box>
 
-        <Card className="border-2 shadow-xl">
-          <CardHeader className="space-y-2 text-center pb-6">
-            <div className="flex justify-center mb-2">
-              <div className="relative">
-                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Calendar className="h-7 w-7 text-primary" />
-                </div>
-                <div className="absolute -inset-1 bg-primary/20 rounded-full blur-md -z-10" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-            <CardDescription>Sign in to your Interview Scheduler account</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="h-11"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="h-11"
-                />
-              </div>
+        <Card sx={{ boxShadow: 3 }}>
+          <CardContent sx={{ p: 4 }}>
+            {/* Header */}
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+              <Avatar
+                sx={{
+                  width: 64,
+                  height: 64,
+                  bgcolor: 'primary.main',
+                  mx: 'auto',
+                  mb: 2,
+                }}
+              >
+                <CalendarMonth sx={{ fontSize: 32 }} />
+              </Avatar>
+              <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+                Welcome Back
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Sign in to your Interview Scheduler account
+              </Typography>
+            </Box>
+
+            {/* Form */}
+            <Box component="form" onSubmit={handleLogin}>
+              <TextField
+                fullWidth
+                label="Email"
+                type="email"
+                placeholder="you@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                sx={{ mb: 3 }}
+              />
+
+              <TextField
+                fullWidth
+                label="Password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                sx={{ mb: 3 }}
+              />
+
               {error && (
-                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                  <p className="text-sm text-destructive">{error}</p>
-                </div>
+                <Alert severity="error" sx={{ mb: 3 }}>
+                  {error}
+                </Alert>
               )}
-              <Button type="submit" className="w-full h-11 shadow-lg shadow-primary/25" disabled={loading}>
+
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                size="large"
+                disabled={loading}
+                sx={{ mb: 2 }}
+              >
                 {loading ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <CircularProgress size={20} sx={{ mr: 1 }} color="inherit" />
                     Signing in...
                   </>
                 ) : (
-                  "Sign in"
+                  'Sign in'
                 )}
               </Button>
-            </form>
+            </Box>
+
+            {/* Footer */}
+            <Box sx={{ textAlign: 'center', pt: 3, borderTop: 1, borderColor: 'divider', mt: 3 }}>
+              <Typography variant="body2" color="text.secondary">
+                Don't have an account?{' '}
+                <Link href="/signup" style={{ color: '#006BFF', fontWeight: 600, textDecoration: 'none' }}>
+                  Create one now
+                </Link>
+              </Typography>
+            </Box>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4 border-t pt-6">
-            <div className="text-sm text-center text-muted-foreground">
-              Don't have an account?{" "}
-              <Link href="/signup" className="text-primary font-medium hover:underline">
-                Create one now
-              </Link>
-            </div>
-          </CardFooter>
         </Card>
-      </div>
-    </div>
+      </Box>
+    </Box>
   )
 }

@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { EventTypeForm } from "@/components/event-type-form"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft, Calendar } from "lucide-react"
-import Link from "next/link"
+import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
+import { EventTypeFormMui } from "@/components/event-type-form-mui"
+import { Box, Typography, Card, CardContent } from "@mui/material"
+import { Event } from "@mui/icons-material"
 
 export default async function NewEventTypePage() {
   const supabase = await createClient()
@@ -16,34 +16,58 @@ export default async function NewEventTypePage() {
     redirect("/login")
   }
 
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4">
-          <Link href="/dashboard">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
-        </div>
-      </header>
+    <DashboardLayout user={{ full_name: profile?.full_name, email: user.email }}>
+      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        {/* Top Bar */}
+        <Box
+          sx={{
+            px: 4,
+            py: 2,
+            borderBottom: 1,
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box
+              sx={{
+                width: 48,
+                height: 48,
+                borderRadius: 2,
+                bgcolor: 'primary.main',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+              }}
+            >
+              <Event />
+            </Box>
+            <Box>
+              <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                Create Event Type
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Define a new interview event type
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
 
-      <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Calendar className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">Create Event Type</h1>
-              <p className="text-muted-foreground mt-0.5">Define a new interview event type</p>
-            </div>
-          </div>
-        </div>
-
-        <EventTypeForm userId={user.id} />
-      </main>
-    </div>
+        {/* Main Content */}
+        <Box sx={{ flex: 1, overflow: 'auto', bgcolor: 'background.default' }}>
+          <Box sx={{ maxWidth: 800, mx: 'auto', px: 4, py: 4 }}>
+            <Card>
+              <CardContent sx={{ p: 4 }}>
+                <EventTypeFormMui userId={user.id} />
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
+      </Box>
+    </DashboardLayout>
   )
 }
